@@ -51,33 +51,111 @@ The goal of this backend project is to build a fully functional, scalable API th
 
 ## 📦 Core Features of the Job Board Platform
 
-### 👤 User Authentication
-- Register, Login, Logout
-- Role-based users: `Job Seeker` and `Employer`
-- JWT-based token authentication
+### 🔐 **Authentication System**
+- Custom user model with encrypted personal data
+- JWT-based authentication (login, logout, register)
+- Password strength validation
+- Secure token refresh mechanism
 
-### 📝 Job Management
-- Employers can create, update, delete job postings
-- Job fields: title, description, location, salary, deadline, etc.
-- Jobs are publicly visible to all users
+### 👤 **User Profile Management**
+- Comprehensive user profiles with personal and professional information
+- Profile image and resume upload capabilities
+- Privacy settings for profile visibility
+- Skills, education, and certification tracking
+- Social media links integration
 
-### 🔍 Job Listings & Filtering
-- List all jobs
-- Filter by title, company, location, or salary
-- Search and pagination for large datasets
+### 📂 **Categories Management**
+- CRUD operations for job categories
+- Admin-only category creation
+- Category statistics and job counts
+- Search and filtering capabilities
 
-### 📥 Job Applications
-- Job Seekers can apply to jobs
-- Applications include job reference, user, and optional CV upload
-- Employers can view applications for their job posts
+### 💼 **Job Management**
+- Complete job posting system with rich details
+- Advanced filtering by employment type, experience level, salary range
+- Location-based and company-based filtering
+- Featured jobs system
+- User-specific job management
+- Job statistics and analytics
 
-### 📤 Email Notifications (Optional/Advanced)
-- Confirmation email after successful application
-- Managed asynchronously using Celery + RabbitMQ
+### 📄 **Applications System**
+- Job application submission with resume upload
+- Application status tracking (pending, reviewed, shortlisted, rejected, hired)
+- Duplicate application prevention
+- Separate views for applicants and employers
+- Application statistics and reporting
 
-### 📄 API Documentation
-- Auto-generated docs using Swagger (`drf-yasg`)
-- Includes all endpoints and schema definitions
+### 📊 **Statistics & Analytics**
+- Job posting statistics
+- Application tracking metrics
+- User profile analytics
+- Category-wise job distribution
+
+### 📄 **API Documentation**
+- Interactive Swagger/OpenAPI documentation
+- Complete endpoint documentation with examples
+- ReDoc alternative documentation
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- PostgreSQL (or use SQLite for development)
+- Git
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/BrahimChatri/alx-project-nexus.git
+   cd alx-project-nexus
+   ```
+
+2. **Create virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+4. **Set up database:**
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+
+5. **Create superuser (optional):**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+6. **Populate sample data:**
+   ```bash
+   python manage.py populate_data
+   ```
+
+7. **Run the development server:**
+   ```bash
+   python manage.py runserver
+   ```
+
+### 🌐 Access Points
+- **API Base URL:** http://127.0.0.1:8000/
+- **Interactive API Docs:** http://127.0.0.1:8000/swagger/
+- **Alternative Docs:** http://127.0.0.1:8000/redoc/
+- **Admin Panel:** http://127.0.0.1:8000/admin/
+
+### 📝 API Documentation
+Detailed API documentation is available in the `/docs/api/` directory:
+- `GETTING_STARTED.md` - Quick start guide
+- `api.md` - Complete API reference
 
 ---
 
