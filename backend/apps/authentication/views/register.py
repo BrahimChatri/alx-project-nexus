@@ -1,22 +1,23 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-import json
+from rest_framework.decorators import api_view
 from ..models import CustomUser
 from utils.encription import encrypt_data
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
 
 # helper function to check password difficulty
 def is_password_strong(password):
     return len(password) >= 8 and any(char.isdigit() for char in password) and any(char.isalpha() for char in password)
 
-@csrf_exempt # For testing only
-@require_http_methods(["POST"])
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register_view(request):
-    data = json.loads(request.body)
+    data = request.data
+    print("Register view was called!")
 
     username = data.get("username")
     password = data.get("password")
-
+    
     if not username or not password:
         return JsonResponse({"error": "Username and password required"}, status=400)
 
@@ -33,6 +34,10 @@ def register_view(request):
     address_raw = data.get("address")
     phone_number_raw = data.get("phone_number")
 
+    if not first_name_raw or not last_name_raw or not full_name_raw:
+        return JsonResponse({"error": "First name, last name, and full name are required"}, status=400)
+    
+    
     # encript data
     first_name = encrypt_data(first_name_raw) if first_name_raw else None
     last_name = encrypt_data(last_name_raw) if last_name_raw else None

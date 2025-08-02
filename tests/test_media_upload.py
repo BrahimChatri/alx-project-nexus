@@ -33,6 +33,8 @@ def test_media_uploads():
     user_data = {
         "username": "mediatest",
         "password": "testpass123",
+        "first_name": "Media",
+        "last_name": "Test",
         "full_name": "Media Test User"
     }
     
@@ -43,7 +45,7 @@ def test_media_uploads():
         return
     
     # Login user
-    login_data = {
+    login_data: dict[str, str] = {
         "username": "mediatest",
         "password": "testpass123"
     }
