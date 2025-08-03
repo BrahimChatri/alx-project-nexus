@@ -37,11 +37,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
     profile_image_url = serializers.SerializerMethodField()
     resume_url = serializers.SerializerMethodField()
     
+    # Decrypted fields for sensitive data
+    phone_number_decrypted = serializers.SerializerMethodField()
+    address_decrypted = serializers.SerializerMethodField()
+    bio_decrypted = serializers.SerializerMethodField()
+    
     class Meta:
         model = UserProfile
         fields = [
-            'id', 'user', 'bio', 'date_of_birth', 'age', 'gender',
-            'phone_number', 'address', 'city', 'country', 'postal_code',
+            'id', 'user', 'bio', 'bio_decrypted', 'date_of_birth', 'age', 'gender',
+            'phone_number', 'phone_number_decrypted', 'address', 'address_decrypted', 
+            'city', 'country', 'postal_code',
             'job_title', 'company', 'experience_level', 
             'expected_salary_min', 'expected_salary_max',
             'skills', 'skills_list', 'education', 'certifications',
@@ -68,6 +74,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             if request.user == obj.user:
                 return request.build_absolute_uri(obj.resume.url)
         return None
+    
+    def get_phone_number_decrypted(self, obj):
+        """Get decrypted phone number"""
+        return obj.get_decrypted_field('phone_number')
+    
+    def get_address_decrypted(self, obj):
+        """Get decrypted address"""
+        return obj.get_decrypted_field('address')
+    
+    def get_bio_decrypted(self, obj):
+        """Get decrypted bio"""
+        return obj.get_decrypted_field('bio')
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
