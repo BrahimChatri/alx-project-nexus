@@ -68,11 +68,6 @@ jobs:
         echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
         echo "ENCRYPTION_KEY=test-encryption-key" >> $GITHUB_ENV
     
-    - name: Set PYTHONPATH
-      run: | 
-          echo "PYTHONPATH=$PYTHONPATH:$(pwd)/backend" >> $GITHUB_ENV
-
-
     - name: Run Django migrations
       working-directory: ./backend
       run: |
