@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from PIL import Image
 import os
+from utils.encryption_mixins import EncryptedFieldMixin
 
 
 def user_profile_image_path(instance, filename):
@@ -19,7 +20,9 @@ def user_resume_path(instance, filename):
     return os.path.join('resumes', filename)
 
 
-class UserProfile(models.Model):
+class UserProfile(EncryptedFieldMixin, models.Model):
+    # Define which fields should be encrypted
+    ENCRYPTED_FIELDS = ['phone_number', 'address', 'bio']
     GENDER_CHOICES = [
         ('male', 'Male'),
         ('female', 'Female'),
