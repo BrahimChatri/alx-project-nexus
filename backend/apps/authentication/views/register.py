@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from ..models import CustomUser
-from utils.encription import encrypt_data
+from backend.utils.encryption import encrypt_data
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 

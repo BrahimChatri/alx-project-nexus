@@ -40,7 +40,7 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         # Decrypt phone number if encrypted
         phone = obj.applicant.phone_number
         if phone:
-            from utils.encription import decrypt_data
+            from backend.utils.encryption import decrypt_data
             from django.conf import settings
             decrypted = decrypt_data(phone, settings.ENCRYPTION_KEY)
             return decrypted if decrypted else phone
