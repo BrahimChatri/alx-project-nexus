@@ -7,7 +7,6 @@ from django.http import JsonResponse
 from datetime import timedelta
 import json
 from .models import CustomUser
-from utils.encryption import encrypt_data
 
 
 # helper function to check password difficulty
@@ -43,25 +42,16 @@ def register_view(request) -> JsonResponse:
         return JsonResponse({"error": "First name, last name, and full name are required"}, status=400)
     
     
-    # encript data
-    first_name = encrypt_data(first_name_raw) if first_name_raw else None
-    last_name = encrypt_data(last_name_raw) if last_name_raw else None
-    full_name = encrypt_data(full_name_raw) if full_name_raw else None
-    address = encrypt_data(address_raw) if address_raw else None
-    phone_number = encrypt_data(phone_number_raw) if phone_number_raw else None
-
-
-
+    # Create user with raw data - encryption will happen automatically via EncryptedFieldMixin
     user = CustomUser.objects.create_user(
         username=username, 
         password=password, 
-        first_name=first_name, 
-        last_name=last_name,
-        full_name=full_name,
-        phone_number=phone_number,
-        address=address
-        )
-    user.save()
+        first_name=first_name_raw, 
+        last_name=last_name_raw,
+        full_name=full_name_raw,
+        phone_number=phone_number_raw or '',
+        address=address_raw or ''
+    )
     
     return JsonResponse({"message": "User registered successfully"})
 
