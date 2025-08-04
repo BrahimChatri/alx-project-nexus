@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Media and static files
+/media
+/staticfiles
+/static
+
+# Environment
+.env
+.env.*
+
+# Docker
+docker-compose.yml
+
+# Frontend (if exists)
+frontend/
+node_modules/
+*.md
+.git/
+.gitignore
+
+# VSCode
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Migrations (optional, if you don't want to copy them)
+*/migrations/*.pyc
+*/migrations/__pycache__/
