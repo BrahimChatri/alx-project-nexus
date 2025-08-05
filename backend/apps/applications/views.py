@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters import rest_framework as filters
 from django.db.models import Q
+import logging
 
 from .models import Application
 from .serializers import (
@@ -12,6 +13,9 @@ from .serializers import (
     ApplicationCreateSerializer, ApplicationStatusUpdateSerializer,
     UserApplicationSerializer
 )
+
+# Get logger for this module
+logger = logging.getLogger('apps.applications')
 
 
 class ApplicationFilter(filters.FilterSet):
@@ -44,13 +48,16 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         Users can only see applications they made or applications to their jobs
         """
         user = self.request.user
-        
+
+        if not user.is_authenticated:
+            return Application.objects.none()
+
         # For job owners: show applications to their jobs
         if self.action in ['list', 'retrieve'] and 'job_applications' in self.request.path:
             return Application.objects.filter(
                 job__posted_by=user
             ).select_related('job', 'applicant')
-        
+
         # For applicants: show their own applications
         return Application.objects.filter(
             applicant=user
@@ -71,6 +78,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         """
         Create a new job application
         """
+        logger.info(f"User '{request.user.username}' attempting to create job application")
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -80,7 +89,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         
         try:
             job = Job.objects.get(id=job_id, is_active=True)
+            logger.debug(f"Job found: '{job.title}' (ID: {job_id})")
         except Job.DoesNotExist:
+            logger.warning(f"User '{request.user.username}' tried to apply to non-existent or inactive job (ID: {job_id})")
             return Response(
                 {'error': 'Job not found or not active'}, 
                 status=status.HTTP_404_NOT_FOUND
@@ -88,12 +99,27 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         
         # Check if user is trying to apply to their own job
         if job.posted_by == request.user:
+            logger.warning(f"User '{request.user.username}' tried to apply to their own job '{job.title}' (ID: {job_id})")
             return Response(
                 {'error': 'You cannot apply to your own job'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Check if user has already applied to this job
+        existing_application = Application.objects.filter(
+            job=job, applicant=request.user
+        ).first()
+        
+        if existing_application:
+            logger.warning(f"User '{request.user.username}' tried to apply again to job '{job.title}' (ID: {job_id})")
+            return Response(
+                {'error': 'You have already applied to this job'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         application = serializer.save()
+        logger.info(f"Application created successfully: User '{request.user.username}' applied to '{job.title}' (Application ID: {application.id})")
+        
         response_serializer = ApplicationDetailSerializer(application, context={'request': request})
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
     
@@ -102,15 +128,23 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         Only job owners can update application status
         """
         application = self.get_object()
+        old_status = application.status
         
         # Check if user is the job owner
         if application.job.posted_by != request.user:
+            logger.warning(f"User '{request.user.username}' tried to update application status without permission (Application ID: {application.id})")
             return Response(
                 {'error': 'Only job owners can update application status'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            application.refresh_from_db()
+            logger.info(f"Application status updated by '{request.user.username}': Application ID {application.id} changed from '{old_status}' to '{application.status}'")
+        
+        return response
     
     def destroy(self, request, *args, **kwargs):
         """
@@ -121,11 +155,13 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         
         # Only applicants can withdraw their applications
         if application.applicant != request.user:
+            logger.warning(f"User '{request.user.username}' tried to withdraw someone else's application (Application ID: {application.id})")
             return Response(
                 {'error': 'You can only withdraw your own applications'}, 
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        logger.info(f"User '{request.user.username}' withdrawing application to '{application.job.title}' (Application ID: {application.id})")
         return super().destroy(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'])

@@ -6,7 +6,11 @@ from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 from datetime import timedelta
 import json
+import logging
 from .models import CustomUser
+
+# Get logger for this module
+logger = logging.getLogger('apps.authentication')
 
 
 # helper function to check password difficulty
@@ -17,18 +21,21 @@ def is_password_strong(password):
 @permission_classes([AllowAny])
 def register_view(request) -> JsonResponse:
     data = request.data
-    print("Register view was called!")
+    logger.info("User registration attempt initiated")
 
     username = data.get("username")
     password = data.get("password")
     
     if not username or not password:
+        logger.warning("Registration failed: Username and password required")
         return JsonResponse({"error": "Username and password required"}, status=400)
 
     if CustomUser.objects.filter(username=username).exists():
+        logger.warning(f"Registration failed: Username '{username}' already exists")
         return JsonResponse({"error": "Username already exists"}, status=400)
     
     if not is_password_strong(password):
+        logger.warning(f"Registration failed for '{username}': Password does not meet strength requirements")
         return JsonResponse({"error": "Password must be at least 8 characters long and contain both letters and numbers"}, status=400)
         
     # Load data 
@@ -39,21 +46,25 @@ def register_view(request) -> JsonResponse:
     phone_number_raw = data.get("phone_number")
 
     if not first_name_raw or not last_name_raw or not full_name_raw:
+        logger.warning(f"Registration failed for '{username}': Missing required fields (first_name, last_name, full_name)")
         return JsonResponse({"error": "First name, last name, and full name are required"}, status=400)
     
-    
-    # Create user with raw data - encryption will happen automatically via EncryptedFieldMixin
-    user = CustomUser.objects.create_user(
-        username=username, 
-        password=password, 
-        first_name=first_name_raw, 
-        last_name=last_name_raw,
-        full_name=full_name_raw,
-        phone_number=phone_number_raw or '',
-        address=address_raw or ''
-    )
-    
-    return JsonResponse({"message": "User registered successfully"})
+    try:
+        # Create user with raw data - encryption will happen automatically via EncryptedFieldMixin
+        user = CustomUser.objects.create_user(
+            username=username, 
+            password=password, 
+            first_name=first_name_raw, 
+            last_name=last_name_raw,
+            full_name=full_name_raw,
+            phone_number=phone_number_raw or '',
+            address=address_raw or ''
+        )
+        logger.info(f"User '{username}' registered successfully with ID: {user.id}")
+        return JsonResponse({"message": "User registered successfully"})
+    except Exception as e:
+        logger.error(f"Failed to create user '{username}': {str(e)}")
+        return JsonResponse({"error": "Failed to create user. Please try again."}, status=500)
 
 class CustomAccessToken(AccessToken):
     """Custom Access Token with configurable lifetime"""
@@ -79,28 +90,38 @@ class CustomAccessToken(AccessToken):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request) -> JsonResponse:
+    logger.info("Login attempt initiated")
+    
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
+        logger.error("Login failed: Invalid JSON data received")
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     
     username = data.get("username")
     password = data.get("password")
     remember_me = data.get("remember_me", False)
     
+    logger.debug(f"Login attempt for username: '{username}', remember_me: {remember_me}")
+    
     # Validate required fields
     if not username or not password:
+        logger.warning("Login failed: Missing username or password")
         return JsonResponse({
             "error": "Username and password are required"
         }, status=400)
     
     user = authenticate(username=username, password=password)
     if user is None:
+        logger.warning(f"Login failed: Invalid credentials for username '{username}'")
         return JsonResponse({"error": "Invalid credentials"}, status=401)
     
     # Check if user is active
     if not user.is_active:
+        logger.warning(f"Login failed: User account '{username}' is disabled")
         return JsonResponse({"error": "User account is disabled"}, status=401)
+    
+    logger.info(f"User '{username}' authenticated successfully")
     
     # Create custom access token with remember me logic
     access_token = CustomAccessToken.for_user(user, remember_me=remember_me)
@@ -111,6 +132,7 @@ def login_view(request) -> JsonResponse:
         refresh_token = RefreshToken.for_user(user)
         # Set refresh token to expire in 15 days
         refresh_token.set_exp(lifetime=timedelta(days=15))
+        logger.debug(f"Refresh token created for user '{username}' with 15-day expiry")
     
     # Prepare response data
     response_data = {
@@ -129,6 +151,7 @@ def login_view(request) -> JsonResponse:
     if refresh_token:
         response_data["refresh"] = str(refresh_token)
     
+    logger.info(f"User '{username}' logged in successfully with {'extended' if remember_me else 'standard'} session")
     return JsonResponse(response_data, status=200)
 
 from rest_framework.decorators import api_view, permission_classes
