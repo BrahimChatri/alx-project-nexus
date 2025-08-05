@@ -38,25 +38,16 @@ USER appuser
 
 # Collect static files (optional, can be done at runtime)
 # RUN python manage.py collectstatic --noinput
-
 # Expose the port
 EXPOSE 8000
+
+# Copy entrypoint script and make it executable
+COPY backend/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
-# Run gunicorn with recommended settings for production
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "3", \
-     "--worker-class", "sync", \
-     "--worker-connections", "1000", \
-     "--max-requests", "1000", \
-     "--max-requests-jitter", "100", \
-     "--timeout", "30", \
-     "--keep-alive", "2", \
-     "--log-level", "info", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "job_board.wsgi:application"]
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
