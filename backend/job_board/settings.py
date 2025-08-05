@@ -201,118 +201,60 @@ CORS_ALLOW_CREDENTIALS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging Configuration
+# Logging Configuration for Production (Cloud Run)
+# All logs are directed to the console (stdout/stderr) and captured by Google Cloud Logging.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
         'simple': {
-            'format': '{levelname} {asctime} {message}',
-            'style': '{',
+            'format': '%(levelname)s %(message)s'
         },
         'detailed': {
-            'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
-            'style': '{',
+            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-            'level': 'INFO',
-        },
-        'file_debug': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'debug.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 5,
-            'formatter': 'detailed',
-            'level': 'DEBUG',
-        },
-        'file_info': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'info.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 5,
             'formatter': 'detailed',
             'level': 'INFO',
-        },
-        'file_error': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'error.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-            'level': 'ERROR',
-        },
-        'security_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'security.log',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 10,
-            'formatter': 'verbose',
-            'level': 'WARNING',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file_info', 'file_error'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['file_error', 'console'],
+            'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.security': {
-            'handlers': ['security_file', 'console'],
+            'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['file_debug'],
-            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False,
         },
         'apps': {
-            'handlers': ['console', 'file_info', 'file_debug', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False,
         },
-        'apps.authentication': {
-            'handlers': ['console', 'file_info', 'security_file', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
-        'apps.jobs': {
-            'handlers': ['console', 'file_info', 'file_debug', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
-        'apps.applications': {
-            'handlers': ['console', 'file_info', 'file_debug', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
-        'apps.categories': {
-            'handlers': ['console', 'file_info', 'file_debug', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
-        'apps.users': {
-            'handlers': ['console', 'file_info', 'file_debug', 'file_error'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
+        # You can add more specific app loggers here if needed
     },
     'root': {
-        'handlers': ['console', 'file_info', 'file_error'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
 }
