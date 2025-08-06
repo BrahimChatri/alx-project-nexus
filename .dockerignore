@@ -37,6 +37,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Migrations (optional, if you don't want to copy them)
-*/migrations/*.pyc
-*/migrations/__pycache__/
+# Ignore only pyc/cache
+**/__pycache__/
+**/*.pyc

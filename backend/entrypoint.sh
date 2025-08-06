@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+echo "Checking for pending model changes..."
+if python manage.py makemigrations --check --dry-run | grep -q "Migrations for"; then
+    echo "Unapplied model changes detected. Generating migrations..."
+    python manage.py makemigrations
+else
+    echo "No new migrations needed."
+fi
+
 echo "Running migrations..."
 python manage.py migrate --noinput
 

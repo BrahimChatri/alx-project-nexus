@@ -46,14 +46,14 @@ class UserProfile(EncryptedFieldMixin, models.Model):
     # Personal Information
     bio = models.TextField(max_length=1000, blank=True, help_text="Brief description about yourself")
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
+    gender = models.CharField(max_length=50, choices=GENDER_CHOICES, blank=True)
     
     # Contact Information (extends the user model)
-    phone_number = models.CharField(max_length=20, blank=True)
+    phone_number = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
-    postal_code = models.CharField(max_length=20, blank=True)
+    postal_code = models.CharField(max_length=100, blank=True)
     
     # Professional Information
     job_title = models.CharField(max_length=200, blank=True)

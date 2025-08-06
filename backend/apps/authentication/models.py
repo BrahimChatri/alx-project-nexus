@@ -7,13 +7,17 @@ from django.conf import settings
 class CustomUser(EncryptedFieldMixin, EncryptionTestMixin, AbstractUser):
     """Custom user model with encrypted sensitive fields"""
     
-    # Define which fields should be encrypted
+    # Fields to encrypt
     ENCRYPTED_FIELDS = ['first_name', 'last_name', 'full_name', 'phone_number', 'address']
-    
-    full_name = models.CharField(null=True, max_length=500, blank=True)  # Increased for encrypted data
-    phone_number = models.CharField(max_length=500, null=True, blank=True)  # Increased for encrypted data
+
+    # Override inherited fields to allow for encrypted values
+    first_name = models.CharField(max_length=500, blank=True)
+    last_name = models.CharField(max_length=500, blank=True)
+
+    full_name = models.CharField(max_length=500, null=True, blank=True)
+    phone_number = models.CharField(max_length=500, null=True, blank=True)
+    address = models.CharField(max_length=500, null=True, blank=True)
     is_admin = models.BooleanField(default=False)
-    address = models.CharField(null=True, max_length=500, blank=True)  # Increased for encrypted data
     date_created = models.DateTimeField(auto_now_add=True)
     
     class Meta:

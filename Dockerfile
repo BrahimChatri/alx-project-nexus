@@ -29,6 +29,10 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy the backend application code
 COPY backend/ .
 
+# Copy entrypoint script and make it executable
+COPY backend/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Create necessary directories and set permissions
 RUN mkdir -p /app/staticfiles /app/media \
     && chown -R appuser:appuser /app
@@ -41,9 +45,6 @@ USER appuser
 # Expose the port
 EXPOSE 8000
 
-# Copy entrypoint script and make it executable
-COPY backend/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
