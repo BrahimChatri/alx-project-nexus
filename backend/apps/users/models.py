@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from PIL import Image
 import os
-from utils.encryption_mixins import EncryptedFieldMixin
+from utils.encryption import EncryptedFieldMixin
 
 
 def user_profile_image_path(instance, filename):

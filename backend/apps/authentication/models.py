@@ -1,10 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from utils.encryption_mixins import EncryptedFieldMixin, EncryptionTestMixin
-from utils.encryption import decrypt_data
+from utils.encryption import EncryptedFieldMixin
 from django.conf import settings
 
-class CustomUser(EncryptedFieldMixin, EncryptionTestMixin, AbstractUser):
+class CustomUser(EncryptedFieldMixin, AbstractUser):
     """Custom user model with encrypted sensitive fields"""
     
     # Fields to encrypt
