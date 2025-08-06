@@ -61,11 +61,11 @@ class Command(BaseCommand):
             
             profile = UserProfile.objects.create(
                 user=user,
-                bio=fake.text(max_nb_chars=300),
+                bio=fake.text(max_nb_chars=200),  # Keep shorter for encryption
                 date_of_birth=birth_date,
                 gender=fake.random_element(elements=('male', 'female', 'other')),
-                phone_number=fake.phone_number()[:20],
-                address=fake.address(),
+                phone_number=fake.phone_number()[:15],  # Keep shorter for encryption
+                address=fake.address()[:100],  # Keep shorter for encryption
                 city=fake.city(),
                 country=fake.country(),
                 postal_code=fake.postcode(),

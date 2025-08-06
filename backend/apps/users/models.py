@@ -49,7 +49,7 @@ class UserProfile(EncryptedFieldMixin, models.Model):
     gender = models.CharField(max_length=50, choices=GENDER_CHOICES, blank=True)
     
     # Contact Information (extends the user model)
-    phone_number = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=500, blank=True)  # Increased for encryption
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)

@@ -152,6 +152,112 @@ The goal of this backend project is to build a fully functional, scalable API th
 - **Alternative Docs:** http://127.0.0.1:8000/redoc/
 - **Admin Panel:** http://127.0.0.1:8000/admin/
 
+### 📁 Folder Structure
+```
+alx-project-nexus
+├─ .dockerignore
+├─ .github
+│  └─ workflows
+│     └─ ci.yml
+├─ .gitignore
+├─ Dockerfile
+├─ README.md
+├─ backend
+│  ├─ apps
+│  │  ├─ applications
+│  │  │  ├─ __init__.py
+│  │  │  ├─ admin.py
+│  │  │  ├─ apps.py
+│  │  │  ├─ migrations
+│  │  │  │  ├─ 0001_initial.py
+│  │  │  │  └─ __init__.py
+│  │  │  ├─ models.py
+│  │  │  ├─ serializers.py
+│  │  │  ├─ tests.py
+│  │  │  ├─ urls.py
+│  │  │  └─ views.py
+│  │  ├─ authentication
+│  │  │  ├─ __init__.py
+│  │  │  ├─ admin.py
+│  │  │  ├─ apps.py
+│  │  │  ├─ migrations
+│  │  │  │  ├─ 0001_initial.py
+│  │  │  │  ├─ 0002_alter_customuser_options_alter_customuser_address_and_more.py
+│  │  │  │  ├─ 0003_alter_customuser_first_name_and_more.py
+│  │  │  │  └─ __init__.py
+│  │  │  ├─ models.py
+│  │  │  ├─ serializers.py
+│  │  │  ├─ tests.py
+│  │  │  ├─ urls.py
+│  │  │  └─ views.py
+│  │  ├─ categories
+│  │  │  ├─ __init__.py
+│  │  │  ├─ admin.py
+│  │  │  ├─ apps.py
+│  │  │  ├─ management
+│  │  │  │  ├─ __init__.py
+│  │  │  │  └─ commands
+│  │  │  │     ├─ __init__.py
+│  │  │  │     └─ populate_data.py
+│  │  │  ├─ migrations
+│  │  │  │  ├─ 0001_initial.py
+│  │  │  │  └─ __init__.py
+│  │  │  ├─ models.py
+│  │  │  ├─ serializers.py
+│  │  │  ├─ tests.py
+│  │  │  ├─ urls.py
+│  │  │  └─ views.py
+│  │  ├─ jobs
+│  │  │  ├─ __init__.py
+│  │  │  ├─ admin.py
+│  │  │  ├─ apps.py
+│  │  │  ├─ migrations
+│  │  │  │  ├─ 0001_initial.py
+│  │  │  │  └─ __init__.py
+│  │  │  ├─ models.py
+│  │  │  ├─ serializers.py
+│  │  │  ├─ tests.py
+│  │  │  ├─ urls.py
+│  │  │  └─ views.py
+│  │  └─ users
+│  │     ├─ __init__.py
+│  │     ├─ admin.py
+│  │     ├─ apps.py
+│  │     ├─ migrations
+│  │     │  ├─ 0001_initial.py
+│  │     │  ├─ 0002_alter_userprofile_gender_and_more.py
+│  │     │  └─ __init__.py
+│  │     ├─ models.py
+│  │     ├─ serializers.py
+│  │     ├─ tests.py
+│  │     ├─ urls.py
+│  │     └─ views.py
+│  ├─ entrypoint.sh
+│  ├─ job_board
+│  │  ├─ __init__.py
+│  │  ├─ asgi.py
+│  │  ├─ settings.py
+│  │  ├─ urls.py
+│  │  └─ wsgi.py
+│  ├─ manage.py
+│  ├─ requirements.txt
+│  └─ utils
+│     ├─ __init__.py
+│     ├─ encryption.py
+│     ├─ encryption_mixins.py
+│     └─ encryption_mixins_backup.py
+├─ docs
+│   ├─ GETTING_STARTED.md
+│   └─ API_DOCUMENTATION.md
+└─ tests
+   ├─ load_data.py
+   ├─ test_api.py
+   ├─ test_media_upload.py
+   └─ test_remember_me.py
+
+```
+
+
 ### 📝 API Documentation
 Detailed API documentation is available in the `/docs/api/` directory:
 - `GETTING_STARTED.md` - Quick start guide
