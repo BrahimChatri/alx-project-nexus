@@ -58,7 +58,7 @@ ENV/
 env/
 env.bak/
 venv.bak/
-
+local_test/
 # VS Code
 .vscode/
 
