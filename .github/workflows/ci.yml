@@ -14,10 +14,11 @@ jobs:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_job_board
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U testuser"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -44,7 +45,7 @@ jobs:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ matrix.python-version }}n }}
 
     - name: Cache pip dependencies
       uses: actions/cache@v3
@@ -64,10 +65,15 @@ jobs:
       run: |
         echo "SECRET_KEY=test-secret-key-for-github-actions" >> $GITHUB_ENV
         echo "DEBUG=True" >> $GITHUB_ENV
-        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_job_board" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgres://testuser:testpass@localhost:5432/testdb" >> $GITHUB_ENV
         echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
         echo "ENCRYPTION_KEY=test-encryption-key" >> $GITHUB_ENV
-    
+        echo "DB_HOST=localhost" >> $GITHUB_ENV
+        echo "DB_PORT=5432" >> $GITHUB_ENV
+        echo "DB_USER=testuser" >> $GITHUB_ENV
+        echo "DB_PASSWORD=testpass" >> $GITHUB_ENV
+        echo "DB_NAME=testdb" >> $GITHUB_ENV
+  
     - name: Run Django migrations
       working-directory: ./backend
       run: |
