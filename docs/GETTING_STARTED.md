@@ -232,13 +232,22 @@ ENCRYPTION_KEY=your-32-character-encryption-key
 JWT_ACCESS_TOKEN_LIFETIME=15  # minutes
 JWT_REFRESH_TOKEN_LIFETIME=7  # days
 
-# Optional: Email Configuration
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+# Email Configuration (Required for password reset functionality)
+# For Gmail: Create an App-Specific Password at https://myaccount.google.com/apppasswords
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
+EMAIL_USE_SSL=False
 EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
+EMAIL_HOST_PASSWORD=your-16-character-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
+SERVER_EMAIL=your-email@gmail.com
+
+# Alternative Email Providers:
+# Outlook: EMAIL_HOST=smtp-mail.outlook.com
+# Yahoo: EMAIL_HOST=smtp.mail.yahoo.com
+# Development Only: EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 
 # Optional: AWS S3 Configuration
 USE_S3=False

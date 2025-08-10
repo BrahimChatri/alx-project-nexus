@@ -147,6 +147,95 @@ Logout user and blacklist tokens.
 }
 ```
 
+### Password Reset - Request
+**POST** `/auth/forgot-password/`
+
+Request a password reset by sending a 6-digit verification code to the user's email.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Password reset code has been sent to your email",
+  "email": "user@example.com",
+  "token": "generated-token-string",
+  "expires_in": "1 hour"
+}
+```
+
+### Password Reset - Verify Code
+**POST** `/auth/verify-reset-code/`
+
+Verify the 6-digit code received via email.
+
+**Request Body:**
+```json
+{
+  "token": "token-from-forgot-password",
+  "code": "123456"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Verification code is valid",
+  "token": "token-string",
+  "valid": true
+}
+```
+
+### Password Reset - Confirm
+**POST** `/auth/reset-password/`
+
+Reset the password using the verified token and code.
+
+**Request Body:**
+```json
+{
+  "token": "token-from-forgot-password",
+  "code": "123456",
+  "new_password": "NewSecurePassword123",
+  "confirm_password": "NewSecurePassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Password has been reset successfully. You can now login with your new password.",
+  "success": true
+}
+```
+
+### Password Reset - Resend Code
+**POST** `/auth/resend-reset-code/`
+
+Resend a new verification code if the previous one expired.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "A new password reset code has been sent to your email",
+  "email": "user@example.com",
+  "token": "new-token-string",
+  "expires_in": "1 hour"
+}
+```
+
 ---
 
 ## User Profile Management

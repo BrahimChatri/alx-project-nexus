@@ -39,9 +39,12 @@ The Job Board API is built with:
 
 ### 🔐 Security
 - **Data Encryption**: Sensitive user data encrypted with AES-256
-- **JWT Authentication**: Secure token-based authentication
+- **JWT Authentication**: Secure token-based authentication with token rotation
+- **Password Reset**: Email-based password reset with 6-digit verification codes
 - **Permission-based Access**: Role-based access control
 - **Input Validation**: Comprehensive data validation and sanitization
+- **Token Blacklisting**: Secure logout with token invalidation
+- **Remember Me**: Extended session functionality with secure token management
 
 ### 👤 User Management
 - **User Registration/Login**: Secure account creation and authentication
