@@ -157,7 +157,7 @@ The goal of this backend project is to build a fully functional, scalable API th
 
 ### 📁 Folder Structure
 ```
-alx-project-nexus
+📦 
 ├─ .dockerignore
 ├─ .github
 │  └─ workflows
@@ -183,10 +183,12 @@ alx-project-nexus
 │  │  │  ├─ __init__.py
 │  │  │  ├─ admin.py
 │  │  │  ├─ apps.py
+│  │  │  ├─ email_utils.py
 │  │  │  ├─ migrations
 │  │  │  │  ├─ 0001_initial.py
 │  │  │  │  ├─ 0002_alter_customuser_options_alter_customuser_address_and_more.py
 │  │  │  │  ├─ 0003_alter_customuser_first_name_and_more.py
+│  │  │  │  ├─ 0004_passwordresettoken.py
 │  │  │  │  └─ __init__.py
 │  │  │  ├─ models.py
 │  │  │  ├─ serializers.py
@@ -226,9 +228,13 @@ alx-project-nexus
 │  │     ├─ __init__.py
 │  │     ├─ admin.py
 │  │     ├─ apps.py
+│  │     ├─ management
+│  │     │  └─ commands
+│  │     │     └─ test_encryption.py
 │  │     ├─ migrations
 │  │     │  ├─ 0001_initial.py
 │  │     │  ├─ 0002_alter_userprofile_gender_and_more.py
+│  │     │  ├─ 0003_increase_encrypted_field_lengths.py
 │  │     │  └─ __init__.py
 │  │     ├─ models.py
 │  │     ├─ serializers.py
@@ -236,6 +242,7 @@ alx-project-nexus
 │  │     ├─ urls.py
 │  │     └─ views.py
 │  ├─ entrypoint.sh
+│  ├─ example.env
 │  ├─ job_board
 │  │  ├─ __init__.py
 │  │  ├─ asgi.py
@@ -245,21 +252,24 @@ alx-project-nexus
 │  ├─ manage.py
 │  ├─ requirements.txt
 │  └─ utils
+│     ├─ README_ENCRYPTION.md
 │     ├─ __init__.py
-│     ├─ encryption.py
-│     ├─ encryption_mixins.py
-│     └─ encryption_mixins_backup.py
+│     └─ encryption.py
 ├─ docs
-│   ├─ GETTING_STARTED.md
-│   └─ API_DOCUMENTATION.md
+│  ├─ API_DOCUMENTATION.md
+│  ├─ GETTING_STARTED.md
+│  ├─ PASSWORD_RESET_README.md
+│  ├─ README.md
+│  ├─ TESTING_GUIDE.md
+│  ├─ diagram.pdf
+│  ├─ diagram.png
+│  └─ representation.md
 └─ tests
    ├─ load_data.py
    ├─ test_api.py
    ├─ test_media_upload.py
    └─ test_remember_me.py
-
 ```
-
 
 ### 📝 API Documentation
 Detailed API documentation is available in the `/docs/` directory:
