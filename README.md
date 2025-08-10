@@ -54,8 +54,11 @@ The goal of this backend project is to build a fully functional, scalable API th
 ### 🔐 **Authentication System**
 - Custom user model with encrypted personal data
 - JWT-based authentication (login, logout, register)
-- Password strength validation
-- Secure token refresh mechanism
+- **Password Reset with Email Verification** - 6-digit codes sent via email
+- Password strength validation with comprehensive rules
+- Secure token refresh mechanism with blacklisting
+- Remember Me functionality with extended token lifetime
+- Token rotation and automatic invalidation
 
 ### 👤 **User Profile Management**
 - Comprehensive user profiles with personal and professional information
@@ -259,19 +262,123 @@ alx-project-nexus
 
 
 ### 📝 API Documentation
-Detailed API documentation is available in the `/docs/api/` directory:
-- `GETTING_STARTED.md` - Quick start guide
-- `api.md` - Complete API reference
+Detailed API documentation is available in the `/docs/` directory:
+- [`GETTING_STARTED.md`](./docs/GETTING_STARTED.md) - Complete setup guide with Docker
+- [`API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md) - Complete API reference with examples
+- [`PASSWORD_RESET_README.md`](./docs/PASSWORD_RESET_README.md) - Password reset functionality guide
+- [`TESTING_GUIDE.md`](./docs/TESTING_GUIDE.md) - Comprehensive testing instructions
+- [`representation.md`](./docs/representation.md) - Comprehensive project presentation
+
+### 🔗 Quick Access Links
+- **Interactive API Docs:** http://127.0.0.1:8000/swagger/
+- **Alternative Docs:** http://127.0.0.1:8000/redoc/
+- **Admin Panel:** http://127.0.0.1:8000/admin/
+
+## 🔌 API Endpoints Overview
+
+### Authentication
+```
+POST /auth/register/              # User registration
+POST /auth/login/                 # User login (with remember me)
+POST /auth/logout/                # User logout
+POST /auth/forgot-password/       # Request password reset
+POST /auth/verify-reset-code/     # Verify 6-digit code
+POST /auth/reset-password/        # Confirm password reset
+POST /auth/resend-reset-code/     # Resend verification code
+POST /api/token/                  # Get JWT tokens
+POST /api/token/refresh/          # Refresh JWT token
+```
+
+### User Profiles
+```
+GET    /api/profiles/                        # List public profiles
+GET    /api/profiles/available_candidates/   # Available candidates
+GET    /account/profiles/my_profile/         # Get current user profile
+PATCH  /account/profiles/my_profile/         # Update profile
+GET    /account/profiles/my_stats/           # User statistics
+POST   /api/profiles/{id}/upload_profile_image/  # Upload profile image
+POST   /api/profiles/{id}/upload_resume/         # Upload resume
+```
+
+### Job Management
+```
+GET    /api/jobs/                    # List jobs with filtering
+POST   /api/jobs/                    # Create job posting
+GET    /api/jobs/{id}/               # Get job details
+PATCH  /api/jobs/{id}/               # Update job
+DELETE /api/jobs/{id}/               # Delete job
+GET    /api/jobs/my_jobs/            # User's posted jobs
+GET    /api/jobs/featured/           # Featured jobs
+GET    /api/jobs/stats/              # Job statistics
+GET    /api/jobs/{id}/applications/  # Job applications (employer view)
+```
+
+### Application Management
+```
+GET    /api/applications/                     # List user applications
+POST   /api/applications/                     # Apply to job
+GET    /api/applications/{id}/                # Application details
+DELETE /api/applications/{id}/                # Withdraw application
+PATCH  /api/applications/{id}/update_status/  # Update status (employers)
+GET    /api/applications/my_applications/     # My applications
+GET    /api/applications/received_applications/ # Received applications
+GET    /api/applications/stats/               # Application statistics
+```
+
+### Categories
+```
+GET    /api/categories/              # List categories
+POST   /api/categories/              # Create category (admin)
+GET    /api/categories/{id}/         # Category details
+PATCH  /api/categories/{id}/         # Update category (admin)
+DELETE /api/categories/{id}/         # Delete category (admin)
+GET    /api/categories/{id}/jobs/    # Jobs in category
+GET    /api/categories/stats/        # Category statistics
+```
+
+### Documentation
+```
+GET    /swagger/                     # Interactive API documentation
+GET    /redoc/                       # Alternative documentation
+GET    /swagger.json                 # OpenAPI JSON schema
+GET    /admin/                       # Django admin panel
+```
 
 ---
 
 ## 🧪 Testing
-- Unit and integration tests using Django's testing framework
-- Tests for:
-  - Authentication
-  - Job operations
-  - Application endpoints
-  - Permissions and validations
+
+### Comprehensive Test Suite
+- **15 Test Categories** covering all functionality
+- **Faker Integration** for realistic random test data
+- **Performance Testing** with load testing capabilities
+- **Security Testing** for permissions and validation
+- **Automated Test Runner** with detailed reporting
+
+### Test Coverage
+- **Authentication System**: Registration, login, logout, password reset, JWT tokens
+- **User Profiles**: Profile management, file uploads, encryption verification
+- **Job Management**: CRUD operations, filtering, search, statistics
+- **Application System**: Application lifecycle, status tracking, permissions
+- **Security**: Access control, data validation, error handling
+- **Performance**: Load testing, pagination, concurrent requests
+
+### Run Tests
+```bash
+# Run comprehensive test suite
+cd backend
+python full_test.py
+
+# Run specific Django tests
+python manage.py test
+
+# Run with coverage
+python manage.py test --verbosity=2
+```
+
+### Test Documentation
+- [`TESTING_GUIDE.md`](./docs/TESTING_GUIDE.md) - Complete testing instructions
+- [`full_test.py`](./backend/full_test.py) - Automated test suite
 
 ---
 
