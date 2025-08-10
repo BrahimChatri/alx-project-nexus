@@ -61,7 +61,7 @@ venv.bak/
 local_test/
 # VS Code
 .vscode/
-
+*.html
 # PyCharm
 .idea/
 
