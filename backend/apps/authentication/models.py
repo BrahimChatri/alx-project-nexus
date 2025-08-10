@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from utils.encryption import EncryptedFieldMixin
 from django.conf import settings
+from django.utils import timezone
+import secrets
+import string
+from datetime import timedelta
 
 class CustomUser(EncryptedFieldMixin, AbstractUser):
     """Custom user model with encrypted sensitive fields"""
@@ -73,3 +77,66 @@ class CustomUser(EncryptedFieldMixin, AbstractUser):
         
         # Call parent save (which will handle encryption)
         super().save(*args, **kwargs)
+
+
+class PasswordResetToken(models.Model):
+    """Model to store password reset tokens"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=6)  # 6-digit verification code
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['code', 'user']),
+        ]
+    
+    def __str__(self):
+        return f"Password reset token for {self.user.username}"
+    
+    @property
+    def is_expired(self):
+        """Check if the token has expired"""
+        return timezone.now() > self.expires_at
+    
+    @classmethod
+    def generate_token(cls):
+        """Generate a secure random token"""
+        alphabet = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(alphabet) for _ in range(64))
+    
+    @classmethod
+    def generate_code(cls):
+        """Generate a 6-digit verification code"""
+        return ''.join(secrets.choice(string.digits) for _ in range(6))
+    
+    @classmethod
+    def create_for_user(cls, user):
+        """Create a new password reset token for a user"""
+        # Invalidate all previous tokens for this user
+        cls.objects.filter(user=user, used=False).update(used=True)
+        
+        # Create new token
+        token = cls.objects.create(
+            user=user,
+            token=cls.generate_token(),
+            code=cls.generate_code(),
+            expires_at=timezone.now() + timedelta(hours=1)  # Token expires in 1 hour
+        )
+        return token
+    
+    def validate_and_use(self):
+        """Validate the token and mark it as used"""
+        if self.used:
+            return False, "This reset token has already been used."
+        
+        if self.is_expired:
+            return False, "This reset token has expired."
+        
+        self.used = True
+        self.save()
+        return True, "Token validated successfully."

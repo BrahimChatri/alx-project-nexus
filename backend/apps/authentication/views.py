@@ -2,12 +2,15 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework.decorators import api_view, permission_classes, api_view
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from django.http import JsonResponse
 from datetime import timedelta
 import json
 import logging
-from .models import CustomUser
+from .models import CustomUser, PasswordResetToken
+from .email_utils import send_password_reset_email, send_password_reset_confirmation_email
+from django.db import transaction
 
 # Get logger for this module
 logger = logging.getLogger('apps.authentication')
@@ -154,11 +157,6 @@ def login_view(request) -> JsonResponse:
     logger.info(f"User '{username}' logged in successfully with {'extended' if remember_me else 'standard'} session")
     return JsonResponse(response_data, status=200)
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request) -> Response:
@@ -168,3 +166,223 @@ def logout_view(request) -> Response:
         return Response({"message": "Logged out successfully."})
     except:
         return Response({"error": "Token not found or already blacklisted."}, status=400)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password_view(request) -> JsonResponse:
+    """
+    Handle forgot password request - send verification code to user's email
+    """
+    logger.info("Password reset request initiated")
+    
+    email = request.data.get('email', '').strip().lower()
+    
+    if not email:
+        logger.warning("Password reset failed: Email not provided")
+        return JsonResponse({"error": "Email address is required"}, status=400)
+    
+    try:
+        # Find user by email
+        user = CustomUser.objects.get(email=email)
+        logger.info(f"Password reset requested for user: {user.username}")
+        
+        # Create password reset token
+        with transaction.atomic():
+            reset_token = PasswordResetToken.create_for_user(user)
+            
+            # Send email with verification code
+            email_sent = send_password_reset_email(user, reset_token, request)
+            
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {email}")
+                return JsonResponse({
+                    "message": "Password reset code has been sent to your email",
+                    "email": email,
+                    "token": reset_token.token,  # Include token for frontend to use 
+                    "expires_in": "1 hour"
+                }, status=200)
+            else:
+                logger.error(f"Failed to send password reset email to {email}")
+                return JsonResponse({
+                    "error": "Failed to send email. Please check your email configuration and try again."
+                }, status=500)
+                
+    except CustomUser.DoesNotExist:
+        logger.warning(f"Password reset failed: No user found with email {email}")
+        # Don't reveal whether email exists or not for security
+        return JsonResponse({
+            "message": "If an account exists with this email, a password reset code will be sent.",
+            "email": email
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Unexpected error during password reset: {str(e)}")
+        return JsonResponse({
+            "error": "An unexpected error occurred. Please try again later."
+        }, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_reset_code_view(request) -> JsonResponse:
+    """
+    Verify the password reset code entered by user
+    """
+    logger.info("Password reset code verification initiated")
+    
+    token = request.data.get('token', '').strip()
+    code = request.data.get('code', '').strip()
+    
+    if not token or not code:
+        logger.warning("Code verification failed: Missing token or code")
+        return JsonResponse({"error": "Token and verification code are required"}, status=400)
+    
+    try:
+        # Find the reset token
+        reset_token = PasswordResetToken.objects.get(token=token, code=code)
+        
+        # Check if token is valid
+        if reset_token.used:
+            logger.warning(f"Code verification failed: Token already used for user {reset_token.user.username}")
+            return JsonResponse({"error": "This reset code has already been used"}, status=400)
+        
+        if reset_token.is_expired:
+            logger.warning(f"Code verification failed: Token expired for user {reset_token.user.username}")
+            return JsonResponse({"error": "This reset code has expired. Please request a new one."}, status=400)
+        
+        logger.info(f"Password reset code verified successfully for user {reset_token.user.username}")
+        return JsonResponse({
+            "message": "Verification code is valid",
+            "token": token,
+            "valid": True
+        }, status=200)
+        
+    except PasswordResetToken.DoesNotExist:
+        logger.warning("Code verification failed: Invalid token or code")
+        return JsonResponse({"error": "Invalid verification code"}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error during code verification: {str(e)}")
+        return JsonResponse({
+            "error": "An unexpected error occurred. Please try again."
+        }, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password_confirm_view(request) -> JsonResponse:
+    """
+    Reset the user's password after successful code verification
+    """
+    logger.info("Password reset confirmation initiated")
+    
+    token = request.data.get('token', '').strip()
+    code = request.data.get('code', '').strip()
+    new_password = request.data.get('new_password', '')
+    confirm_password = request.data.get('confirm_password', '')
+    
+    # Validate inputs
+    if not all([token, code, new_password, confirm_password]):
+        logger.warning("Password reset failed: Missing required fields")
+        return JsonResponse({
+            "error": "All fields are required (token, code, new password, and confirmation)"
+        }, status=400)
+    
+    if new_password != confirm_password:
+        logger.warning("Password reset failed: Passwords don't match")
+        return JsonResponse({"error": "Passwords do not match"}, status=400)
+    
+    if not is_password_strong(new_password):
+        logger.warning("Password reset failed: Password does not meet strength requirements")
+        return JsonResponse({
+            "error": "Password must be at least 8 characters long and contain both letters and numbers"
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Find and validate the reset token
+            reset_token = PasswordResetToken.objects.select_for_update().get(
+                token=token,  
+                code=code
+            )
+            
+            # Validate token
+            is_valid, message = reset_token.validate_and_use()
+            if not is_valid:
+                logger.warning(f"Password reset failed for user {reset_token.user.username}: {message}")
+                return JsonResponse({"error": message}, status=400)
+            
+            # Reset the user's password
+            user = reset_token.user
+            user.set_password(new_password)
+            user.save()
+            
+            # Send confirmation email
+            send_password_reset_confirmation_email(user)
+            
+            logger.info(f"Password reset successfully for user {user.username}")
+            return JsonResponse({
+                "message": "Password has been reset successfully. You can now login with your new password.",
+                "success": True
+            }, status=200)
+            
+    except PasswordResetToken.DoesNotExist:
+        logger.warning("Password reset failed: Invalid token or code")
+        return JsonResponse({"error": "Invalid or expired reset code"}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error during password reset: {str(e)}")
+        return JsonResponse({
+            "error": "An unexpected error occurred. Please try again."
+        }, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_reset_code_view(request) -> JsonResponse:
+    """
+    Resend the password reset code to user's email
+    """
+    logger.info("Resend password reset code initiated")
+    
+    email = request.data.get('email', '').strip().lower()
+    
+    if not email:
+        logger.warning("Resend code failed: Email not provided")
+        return JsonResponse({"error": "Email address is required"}, status=400)
+    
+    try:
+        # Find user by email
+        user = CustomUser.objects.get(email=email)
+        
+        # Create new password reset token
+        with transaction.atomic():
+            reset_token = PasswordResetToken.create_for_user(user)
+            
+            # Send email with new verification code
+            email_sent = send_password_reset_email(user, reset_token, request)
+            
+            if email_sent:
+                logger.info(f"Password reset code resent successfully to {email}")
+                return JsonResponse({
+                    "message": "A new password reset code has been sent to your email",
+                    "email": email,
+                    "token": reset_token.token,
+                    "expires_in": "1 hour"
+                }, status=200)
+            else:
+                logger.error(f"Failed to resend password reset email to {email}")
+                return JsonResponse({
+                    "error": "Failed to send email. Please try again later."
+                }, status=500)
+                
+    except CustomUser.DoesNotExist:
+        logger.warning(f"Resend code failed: No user found with email {email}")
+        # Don't reveal whether email exists or not
+        return JsonResponse({
+            "message": "If an account exists with this email, a new password reset code will be sent.",
+            "email": email
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Unexpected error during code resend: {str(e)}")
+        return JsonResponse({
+            "error": "An unexpected error occurred. Please try again later."
+        }, status=500)
