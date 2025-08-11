@@ -74,16 +74,24 @@ class JobCreateSerializer(serializers.ModelSerializer):
         return value
     
     def create(self, validated_data):
-        category_id = validated_data.pop('category_id')
-        from apps.categories.models import Category
-        category = Category.objects.get(id=category_id)
-        
-        job = Job.objects.create(
-            category=category,
-            posted_by=self.context['request'].user,
-            **validated_data
-        )
-        return job
+        try:
+            category_id = validated_data.pop('category_id')
+            from apps.categories.models import Category
+            category = Category.objects.get(id=category_id)
+            request = self.context.get('request')
+            if not request or not hasattr(request, 'user'):
+                raise serializers.ValidationError("Request user not found in context")
+            job = Job.objects.create(
+                category=category,
+                posted_by=request.user,
+                **validated_data
+            )
+            return job
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error creating job: {str(e)}", exc_info=True)
+            raise
 
 
 class JobUpdateSerializer(serializers.ModelSerializer):
