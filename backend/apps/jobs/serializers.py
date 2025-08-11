@@ -81,6 +81,10 @@ class JobCreateSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             if not request or not hasattr(request, 'user'):
                 raise serializers.ValidationError("Request user not found in context")
+            
+            # Remove posted_by from validated_data if it exists to avoid duplicate argument
+            validated_data.pop('posted_by', None)
+            
             job = Job.objects.create(
                 category=category,
                 posted_by=request.user,
